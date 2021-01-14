@@ -1,22 +1,20 @@
-# Analyze VPC Flow Logs using LogDNA
+# Analyze VPC Flow Logs using IBM Cloud SQL Query
 
 [Flow logs for VPC](https://cloud.ibm.com/vpc-ext/network/flowLogs) store metadata for the network traffic in Virtual Private Clouds, VPC in Cloud Object Storage (COS) buckets.
 
-[Cloud Functions](https://cloud.ibm.com/functions) can be extended by [integrating with Cloud Object Storage (COS)](https://cloud.ibm.com/docs/openwhisk?topic=cloud-functions-pkg_obstorage). The COS trigger type lets you run custom code logic when a new object is stored, updated, or deleted from a designated bucket in COS. 
+[SQL Query](https://cloud.ibm.com/catalog/services/sql-query) allows for running serverless SQL statements on data stored in Cloud Object Storage (COS) buckets. Further you can change the layout of your data through extract transform and load (ETL) statements.
 
-This project shows how use a trigger function to read a flow log COS object and write it to [LogDNA](https://cloud.ibm.com/observe/logging).
+This project shows how use SQL Query to analyze flow logs.
 
-![create flow](./xdocs/vpc-flow-log-dna.png)
+![create flow](./xdocs/flowlog-to-sqlquery.png)
 
 1. The Flow logs for VPC are written to a COS bucket.
-1. Cloud Object Storage sends an event to Cloud Functions.
-1. This event triggers a log action to write LogDNA entries.
+1. SQL Query can be used to query the logs
 
 ## Deploy the project
 
 > The scripts do not check permissions. You must ensure you have the right permissions:
 > - to create service instances,
-> - to create Cloud Functions namespaces (you need to be an Administrator on the Functions service)
 > - to create vpc resources
 > - to create a schematics workspace
 
@@ -25,8 +23,7 @@ Or use your own computer and make sure to install:
    * [IBM Cloud CLI](https://cloud.ibm.com/docs/cli?topic=cloud-cli-install-ibmcloud-cli)
    * Cloud Object Storage plugin. Install it with `ibmcloud plugin install cloud-object-storage`.
    * Cloud VPC infrastructure plugin. Install it with `ibmcloud plugin install vpc-infrastructure`.
-   * Cloud Functions plugin. Install it with `ibmcloud plugin install cloud-functions`.
-   * Schematics plugin. Install it with `ibmcloud plugin install cloud-functions`.
+   * Schematics plugin. Install it with `ibmcloud plugin install schematics`.
    * [jq](https://stedolan.github.io/jq/) command line utility
 
 1. Copy the configuration file and set the values to match your environment. At a minimum, set or review the values for `PREFIX`, `RESOURCE_GROUP_NAME`, `REGION` and `TF_VAR_ssh_key_name`.
@@ -48,7 +45,7 @@ Or use your own computer and make sure to install:
    ./000-prereqs.sh
    ```
 
-1. Create Cloud Object Storage and LogDNA services.
+1. Create Cloud Object Storage and SQL Query services.
 
    ```sh
    ./010-create-services.sh
@@ -57,15 +54,10 @@ Or use your own computer and make sure to install:
    If they do not already exist, the script creates:
       * a Cloud Object Storage service instance and a service key,
       * a storage bucket
-      * a LogDNA service instance and a service key.
+      * a SQL Query service instance and a service key.
 
-1. Create the action and the trigger.  The python action requires python modules that are not provided by the default Cloud Function environment.  It is required to [Package multiple Python files into a .zip file](https://cloud.ibm.com/docs/openwhisk?topic=openwhisk-prep#prep_python_pkg).  If you are using the cloud shell, great!  If not it requires a `pip install virtualenv` into a python3 environment to use the `virtualenv` command to create tne virtualenv directory to put in the zip.  The script runs this in docker, but you can run the `actions/virtualenv_init.sh` by hand on your computer to avoid using docker (if you do not mind installing virtualenv on your computer).
 
-   ```sh
-   ./020-create-functions.sh
-   ```
-
-1. Create a VPC with two instances in the vpc.  The vsi1 is public.  The vsi2 is private and only accesible from vsi1.  For a full explanation see the [blog post](https://www.ibm.com/cloud/blog/use-ibm-log-analysis-with-logdna-to-analyze-vpc-network-traffic-from-ibm-cloud-flow-logs-for-vpc).
+1. Create a VPC with two instances in the vpc.  The vsi1 is public.  The vsi2 is private and only accesible from vsi1. 
 
    ```sh
    ./030-create-vpc.sh
@@ -73,12 +65,8 @@ Or use your own computer and make sure to install:
 
 ## Cleanup
 
-To delete the services and Cloud Functions artifacts, run:
+To delete the services, run:
 
    ```sh
    ./040-cleanup.sh
    ```
-
-## Download the flowlog files
-
-See [actions](./actions) for a python based cli tool to download the flow logs and test out the code.

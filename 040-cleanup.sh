@@ -12,15 +12,6 @@ if workspace_id=$(get_workspace_id); then
   ibmcloud schematics workspace delete --id $workspace_id -f
 fi
 
-
-# Cloud Functions
-ibmcloud fn rule delete create-rule
-ibmcloud fn trigger delete create-trigger
-ibmcloud fn action delete log
-
-NAMESPACE=$PREFIX-actions
-ibmcloud fn namespace delete $NAMESPACE
-
 # Resource authorizations:
 echo '>>> iam authorization policy from flow-log-collector to COS bucket'
 COS_INSTANCE_ID=$(ibmcloud resource service-instance --output JSON $COS_SERVICE_NAME | jq -r '.[0].guid')
@@ -38,5 +29,5 @@ ibmcloud iam authorization-policy-delete $EXISTING_POLICY_ID -f
 COS_INSTANCE_ID=$(ibmcloud resource service-instance --output JSON $COS_SERVICE_NAME | jq -r .[0].id)
 ibmcloud resource service-instance-delete $COS_INSTANCE_ID --force --recursive
 
-LOGDNA_INSTANCE_ID=$(ibmcloud resource service-instance --output JSON $LOGDNA_SERVICE_NAME | jq -r .[0].id)
-ibmcloud resource service-instance-delete $LOGDNA_INSTANCE_ID --force --recursive
+SQL_QUERY_INSTANCE_ID=$(ibmcloud resource service-instance --output JSON $SQL_QUERY_SERVICE_NAME | jq -r .[0].id)
+ibmcloud resource service-instance-delete $SQL_QUERY_INSTANCE_ID --force --recursive

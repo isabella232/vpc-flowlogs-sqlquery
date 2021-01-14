@@ -48,21 +48,14 @@ else
     --region $COS_REGION
 fi
 
-if ibmcloud resource service-instance $LOGDNA_SERVICE_NAME > /dev/null 2>&1; then
-  echo "LogDNA service $LOGDNA_SERVICE_NAME already exists"
+if ibmcloud resource service-instance $SQL_QUERY_SERVICE_NAME > /dev/null 2>&1; then
+  echo "LogDNA service $SQL_QUERY_NAME already exists"
 else
-  echo "Creating LogDNA Service..."
-  ibmcloud resource service-instance-create $LOGDNA_SERVICE_NAME \
-    logdna "$LOGDNA_SERVICE_PLAN" $LOGDNA_REGION || exit 1
+  echo "Creating SQL Query Service..."
+  ibmcloud resource service-instance-create $SQL_QUERY_SERVICE_NAME \
+    sql-query "$SQL_QUERY_SERVICE_PLAN" $SQL_QUERY_REGION || exit 1
 fi
-LOGDNA_INSTANCE_CRN=$(ibmcloud resource service-instance --output JSON $LOGDNA_SERVICE_NAME | jq -r .[0].id)
-echo "LogDNA ID is $LOGDNA_INSTANCE_CRN"
-
-if ibmcloud resource service-key $LOGDNA_SERVICE_NAME-for-functions > /dev/null 2>&1; then
-  echo "Service key already exists"
-else
-  ibmcloud resource service-key-create $LOGDNA_SERVICE_NAME-for-functions Manager --instance-id $LOGDNA_INSTANCE_CRN
-fi
-#TODO Valid roles are Manager, Reader, Standard Member. 
+SQL_QUERY_INSTANCE_CRN=$(ibmcloud resource service-instance --output JSON $SQL_QUERY_SERVICE_NAME | jq -r .[0].id)
+echo "SQL Query ID is $SQL_QUERY_INSTANCE_CRN"
 
 

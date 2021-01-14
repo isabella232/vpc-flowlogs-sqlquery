@@ -23,14 +23,6 @@ else
   exit 1
 fi
 
-echo ">>> Ensuring Cloud Functions plugin is installed"
-if ibmcloud fn namespace list >/dev/null; then
-  echo "cloud-functions plugin is OK"
-else
-  echo "Make sure cloud-functions plugin is properly installed with ibmcloud plugin install cloud-functions."
-  exit 1
-fi
-
 echo ">>> Ensuring Schematics plugin is installed"
 if ibmcloud schematics workspace list >/dev/null; then
   echo "schematics plugin is OK"
